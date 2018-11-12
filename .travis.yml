@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t squiter/over-fib-client-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run squiter/over-fib-client-test npm test -- --coverage
+
+after_success:
+  - docker build -t squiter/overengineering-fibonacci-client ./client
+  - docker build -t squiter/overengineering-fibonacci-nginx ./nginx
+  - docker build -t squiter/overengineering-fibonacci-server ./server
+  - docker build -t squiter/overengineering-fibonacci-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push squiter/overengineering-fibonacci-client
+  - docker push squiter/overengineering-fibonacci-nginx
+  - docker push squiter/overengineering-fibonacci-server
+  - docker push squiter/overengineering-fibonacci-worker
