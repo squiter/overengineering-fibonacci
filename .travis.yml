@@ -1,0 +1,36 @@
+sudo: required
+services:
+  - docker
+env:
+  global:
+    - GIT_SHA=$(git rev-parse HEAD)
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+before_install:
+  # Travis file encryption
+  - openssl aes-256-cbc -K $encrypted_2fd0232aa4bf_key -iv $encrypted_2fd0232aa4bf_iv -in google-cloud-auth.json.enc -out google-cloud-auth.json -d
+
+  # Google Cloud SDK installation
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl
+  - gcloud auth activate-service-account --key-file google-cloud-auth.json
+
+  # Google Cloud configuration
+  - gcloud config set project overengineering-fibonacci
+  - gcloud config set compute/zone southamerica-east1-a
+  - gcloud container clusters get-credentials overfib-cluster
+
+  # Docker Hub configuration
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # Build the test container
+  - docker build -t squiter/overengineering-fibonacci-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run squiter/overengineering-fibonacci-test npm test -- --coverage
+
+deploy:
+  provider: script
+  script: bash ./deploy.sh
+  on:
+    branch: master
