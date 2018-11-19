@@ -17,3 +17,8 @@ spec:
           image: squiter/overengineering-fibonacci-server
           ports:
             - containerPort: 5000
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
