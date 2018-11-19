@@ -22,3 +22,16 @@ spec:
               value: redis-cluster-ip-service
             - name: REDIS_PORT
               value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom: # need to create this on console before!
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
